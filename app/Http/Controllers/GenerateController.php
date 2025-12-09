@@ -2,15 +2,56 @@
 namespace App\Http\Controllers;
 
 use App\Models\PatientMaster;
+use App\Models\PatientTask;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
-class VerifyController extends Controller
+class GenerateController extends Controller
 {
     public function index()
     {
 
         return view('verify.index');
+    }
+
+    private function setStationCode($code)
+    {
+        switch ($code) {
+            case '01':
+                return 'วัดความดัน';
+            case '011':
+                return 'ห้องเจาะเลือด';
+            case '012':
+                return 'ตรวจตา';
+            case '013':
+                return 'ตรวจทันตกรรม';
+            case '02':
+                return 'EKG';
+            case '03':
+                return 'ABI';
+            case '04':
+                return 'EST';
+            case '05':
+                return 'Echo';
+            case '06':
+                return 'Xray';
+            case '07':
+                return 'US';
+            case '08':
+                return 'Mammogram';
+            case '09':
+                return 'BoneDense';
+            case '10':
+                return 'OBS';
+            case '11':
+                return 'CT UpperGI';
+            case '12':
+                return 'MRI';
+            case '13':
+                return 'หมอตา';
+            default:
+                return 'ไม่ระบุ';
+        }
     }
 
     public function search(Request $request)
@@ -147,5 +188,71 @@ class VerifyController extends Controller
         ];
 
         return response()->json($data);
+    }
+
+    public function newCheckUp(Request $request)
+    {
+        $token = $request->headers->get('Authorization');
+        $request->headers->set('Accept', 'application/json');
+        if (env('Token_NewCheckUp') !== str_replace('Bearer ', '', $token)) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Authorization token is invalid',
+            ]);
+        }
+
+        $validatedData = $request->validate([
+            'visitdate'   => 'required|date',
+            'hn'          => 'required',
+            'vn'          => 'required',
+            'firstname'   => 'required',
+            'lastname'    => 'required',
+            'nationality' => 'required',
+            'stations'    => 'required|array',
+        ], [
+            'visitdate.required'   => 'Please provide the Visit Date.',
+            'visitdate.date'       => 'Visit Date must be a valid date.',
+            'hn.required'          => 'Please provide the Hospital Number (HN).',
+            'vn.required'          => 'Please provide the Visit Number (VN).',
+            'firstname.required'   => 'Please provide the First Name.',
+            'lastname.required'    => 'Please provide the Last Name.',
+            'nationality.required' => 'Please provide the Nationality.',
+            'stations.required'    => 'Stations is required',
+            'stations.array'       => 'Stations must be an array',
+        ]);
+
+        $patient = PatientMaster::whereDate('date', $validatedData['visitdate'])->where('hn', $validatedData['hn'])->first();
+        if (! $patient) {
+            $patient          = new PatientMaster();
+            $patient->date    = date('Y-m-d');
+            $patient->hn      = $validatedData['hn'];
+            $patient->name    = $validatedData['firstname'] . ' ' . $validatedData['lastname'];
+            $patient->english = ($validatedData['nationality'] == 'Thai') ? false : true;
+            $patient->save();
+
+            $patient->getLogs()->create([
+                'patient' => $patient->id,
+                'detail'  => 'Create Patient',
+                'user'    => 'API',
+            ]);
+        }
+
+        foreach ($validatedData['stations'] as $station) {
+            PatientTask::firstOrCreate([
+                'patient' => $patient->id,
+                'code'    => $station,
+            ]);
+
+            $patient->getLogs()->create([
+                'patient' => $patient->id,
+                'detail'  => 'Add CheckUp list ' . $this->setStationCode($station),
+                'user'    => 'API',
+            ]);
+        }
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Create patient task success',
+        ]);
     }
 }
