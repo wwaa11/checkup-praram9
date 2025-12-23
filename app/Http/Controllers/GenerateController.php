@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PatientMaster;
 use App\Models\PatientTask;
+use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -198,36 +199,57 @@ class GenerateController extends Controller
             return response()->json([
                 'status'  => 'error',
                 'message' => 'Authorization token is invalid',
-            ]);
+            ], 401);
         }
 
         $validatedData = $request->validate([
-            'visitdate'   => 'required|date',
-            'hn'          => 'required',
-            'vn'          => 'required',
-            'firstname'   => 'required',
-            'lastname'    => 'required',
-            'nationality' => 'required',
-            'stations'    => 'required|array',
+            'visitdate' => 'required|date',
+            'vn'        => 'required',
+            'hn'        => 'required',
+            'stations'  => 'required|array',
         ], [
-            'visitdate.required'   => 'Please provide the Visit Date.',
-            'visitdate.date'       => 'Visit Date must be a valid date.',
-            'hn.required'          => 'Please provide the Hospital Number (HN).',
-            'vn.required'          => 'Please provide the Visit Number (VN).',
-            'firstname.required'   => 'Please provide the First Name.',
-            'lastname.required'    => 'Please provide the Last Name.',
-            'nationality.required' => 'Please provide the Nationality.',
-            'stations.required'    => 'Stations is required',
-            'stations.array'       => 'Stations must be an array',
+            'visitdate.required' => 'Please provide the Visit Date.',
+            'visitdate.date'     => 'Visit Date must be a valid date.',
+            'vn.required'        => 'Please provide the Visit Number (VN).',
+            'hn.required'        => 'Please provide the Hospital Number (HN).',
+            'stations.required'  => 'Stations is required',
+            'stations.array'     => 'Stations must be an array',
         ]);
 
-        $patient = PatientMaster::whereDate('date', $validatedData['visitdate'])->where('hn', $validatedData['hn'])->first();
-        if (! $patient) {
+        $patient = PatientMaster::whereDate('date', $validatedData['visitdate'])->where('vn', $validatedData['vn'])->first();
+        if ($patient == null) {
+            $patientInfo = DB::connection('monkey')
+                ->table('apipatientinfo')
+                ->where('hn', $validatedData['hn'])
+                ->select(
+                    'fistnameth',
+                    'lastnameth',
+                    'firstnameen',
+                    'lastnameen',
+                    'nationality',
+                )
+                ->first();
+            if (! $patientInfo) {
+
+                return response()->json([
+                    'status'  => 'warning',
+                    'message' => 'Not found Patient data.',
+                ], 404);
+            }
+
+            $perferEnglish = ($patientInfo->nationality == 'Thai') ? false : true;
+            if ($perferEnglish) {
+                $name = $patientInfo->firstnameen . ' ' . $patientInfo->lastnameen;
+            } else {
+                $name = $patientInfo->fistnameth . ' ' . $patientInfo->lastnameth;
+            }
+
             $patient          = new PatientMaster();
-            $patient->date    = date('Y-m-d');
+            $patient->date    = $validatedData['visitdate'];
+            $patient->vn      = $validatedData['vn'];
             $patient->hn      = $validatedData['hn'];
-            $patient->name    = $validatedData['firstname'] . ' ' . $validatedData['lastname'];
-            $patient->english = ($validatedData['nationality'] == 'Thai') ? false : true;
+            $patient->name    = $name;
+            $patient->english = $perferEnglish;
             $patient->save();
 
             $patient->getLogs()->create([
@@ -238,16 +260,19 @@ class GenerateController extends Controller
         }
 
         foreach ($validatedData['stations'] as $station) {
-            PatientTask::firstOrCreate([
-                'patient' => $patient->id,
-                'code'    => $station,
-            ]);
+            $exist = $patient->getTasks()->where('code', $station)->first();
+            if ($exist == null) {
+                PatientTask::firstOrCreate([
+                    'patient' => $patient->id,
+                    'code'    => $station,
+                ]);
 
-            $patient->getLogs()->create([
-                'patient' => $patient->id,
-                'detail'  => 'Add CheckUp list ' . $this->setStationCode($station),
-                'user'    => 'API',
-            ]);
+                $patient->getLogs()->create([
+                    'patient' => $patient->id,
+                    'detail'  => 'Add CheckUp list ' . $this->setStationCode($station),
+                    'user'    => 'API',
+                ]);
+            }
         }
 
         return response()->json([
