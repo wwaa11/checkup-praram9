@@ -7,6 +7,8 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\StationController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/test', [ServiceController::class, 'test']);
+
 Route::get('/', [AuthController::class, 'Login'])->name('login');
 
 Route::get('/login', [AuthController::class, 'Login'])->name('login');

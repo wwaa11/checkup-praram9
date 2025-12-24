@@ -1,0 +1,4 @@
+jobs update
+./vendor/bin/sail artisan queue:restart
+supervisorctl stats
+./vendor/bin/sail shell -c "supervisorctl status"
