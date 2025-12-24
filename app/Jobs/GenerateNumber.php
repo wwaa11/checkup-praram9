@@ -2,7 +2,7 @@
 namespace App\Jobs;
 
 use App\Models\Number;
-use App\Models\PatientPrevN;
+use App\Models\PatientPreVN;
 use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -22,7 +22,7 @@ class GenerateNumber implements ShouldQueue, ShouldBeUniqueUntilProcessing
             'date' => date('Y-m-d'),
         ]);
 
-        $preVns = PatientPrevN::where('date', date('Y-m-d'))
+        $preVns = PatientPreVN::where('date', date('Y-m-d'))
             ->whereNotNull('checkin')
             ->whereNull('number')
             ->orderBy('checkin', 'asc')
