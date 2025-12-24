@@ -9,15 +9,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/test', [ServiceController::class, 'test']);
 
-Route::get('/', [AuthController::class, 'Login'])->name('login');
-
 Route::get('/login', [AuthController::class, 'Login'])->name('login');
 Route::post('/login', [AuthController::class, 'LoginRequest'])->name('post.login');
 Route::post('/logout', [AuthController::class, 'LogoutRequest'])->name('logout');
 
 Route::group(['middleware' => 'auth'], function () {
+    Route::get('/', [StationController::class, 'index']);
     Route::get('/statins/index', [StationController::class, 'index'])->name('stations.index');
     Route::get('/statins/room/{roomID}', [StationController::class, 'room'])->name('stations.room');
+
+    Route::post('/again', [StationController::class, 'CallAgain'])->name('stations.again');
 
     Route::get('/register/list', [StationController::class, 'RegisterList'])->name('stations.register.list');
     Route::post('/register/call', [StationController::class, 'RegisterCall'])->name('stations.register.call');

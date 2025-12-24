@@ -131,7 +131,7 @@ class StationController extends Controller
         $prevn->call   = date('Y-m-d H:i:s');
         $prevn->save();
 
-        RegisterChannelEvent::dispatch($prevn->number, $room->name, $prevn->patient_master->english);
+        RegisterChannelEvent::dispatch($room->station->code, $prevn->number, $room->name, $prevn->patient_master->english);
 
         $log          = new PatientLog;
         $log->patient = $prevn->patient_master->id;
@@ -186,6 +186,23 @@ class StationController extends Controller
         $response = [
             'status'  => 'success',
             'message' => 'Patient hold successfully',
+        ];
+
+        return response()->json($response);
+    }
+
+    public function CallAgain(Request $request)
+    {
+        $roomID = $request->input('roomID');
+
+        $room  = Room::find($roomID);
+        $prevn = PatientPreVN::whereDate('date', date('Y-m-d'))
+            ->where('number', $room->now)
+            ->get();
+
+        $response = [
+            'status'  => 'success',
+            'message' => 'Patient called successfully',
         ];
 
         return response()->json($response);

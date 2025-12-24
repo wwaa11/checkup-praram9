@@ -41,4 +41,25 @@
     </div>
 </div>
 @push("scripts")
+    <script>
+        function againFunction() {
+            axios.post("{{ route("stations.again") }}", {
+                    roomID: "{{ $room->id }}"
+                })
+                .then(function(response) {
+                    if (response.data.status == "success") {
+                        refreshPage();
+                    } else {
+                        Swal.fire({
+                            title: "Error",
+                            text: response.data.message,
+                            icon: "error",
+                            showConfirmButton: false,
+                            buttonsStyling: false,
+                            timer: 1500,
+                        });
+                    }
+                });
+        }
+    </script>
 @endpush
