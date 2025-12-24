@@ -22,3 +22,11 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/docker/8.0
+/docker/8.1
+/docker/8.2
+/docker/8.4
+/docker/8.5
+/docker/mariadb
+/docker/mysql
+/docker/pgsql
