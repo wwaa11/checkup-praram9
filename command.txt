@@ -2,3 +2,7 @@ jobs update
 ./vendor/bin/sail artisan queue:restart
 supervisorctl stats
 ./vendor/bin/sail shell -c "supervisorctl status"
+
+artisan queue:work --tries=3 --timeout=300
+artisan queue:work --queue=generate-number --tries=3
+artisan reverb:start --host="0.0.0.0"

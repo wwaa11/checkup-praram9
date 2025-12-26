@@ -67,6 +67,7 @@ return new class extends Migration
             $table->dateTime('date');
             $table->string('type');
             $table->string('number')->nullable();
+            $table->unsignedInteger('call_time')->default(0);
             $table->string('status')->default('wait');
             $table->dateTime('checkin')->nullable();
             $table->dateTime('call')->nullable();
@@ -78,6 +79,8 @@ return new class extends Migration
         Schema::create('patient_tasks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('patient')->constrained('patient_masters');
+            $table->date('date');
+            $table->unsignedInteger('call_time')->default(0);
             $table->string('status')->default('wait');
             $table->string('code');
             $table->dateTime('assign')->nullable();

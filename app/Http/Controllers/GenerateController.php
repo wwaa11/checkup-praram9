@@ -31,9 +31,9 @@ class GenerateController extends Controller
             case '03':
                 return 'ABI';
             case '04':
-                return 'EST';
+                return 'EST|Echo';
             case '05':
-                return 'Echo';
+                return 'Echo|Echo';
             case '06':
                 return 'Xray';
             case '07':
@@ -260,11 +260,54 @@ class GenerateController extends Controller
         }
 
         foreach ($validatedData['stations'] as $station) {
+            switch ($station) {
+                case '01':
+                    $code = 'vs';
+                    break;
+                case '011':
+                    $code = 'lab';
+                    break;
+                case '02':
+                    $code = 'ekg';
+                    break;
+                case '03':
+                    $code = 'abi';
+                    break;
+                case '04':
+                    $code = 'echo';
+                    break;
+                case '05':
+                    $code = 'echo';
+                    break;
+                case '06':
+                    $code = 'xray';
+                    break;
+                case '07':
+                    $code = 'ultrasound';
+                    break;
+                case '08':
+                    $code = 'mammogram';
+                    break;
+                case '09':
+                    $code = 'bonedensity';
+                    break;
+                case '10':
+                    $code = 'obs';
+                    break;
+                case '99':
+                    $code = 'doctor';
+                    break;
+                default:
+                    $code = $station;
+                    break;
+            }
+
             $exist = $patient->getTasks()->where('code', $station)->first();
             if ($exist == null) {
                 PatientTask::firstOrCreate([
                     'patient' => $patient->id,
-                    'code'    => $station,
+                    'date'    => $validatedData['visitdate'],
+                    'code'    => $code,
                 ]);
 
                 $patient->getLogs()->create([

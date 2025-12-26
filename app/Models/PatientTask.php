@@ -5,6 +5,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class PatientTask extends Model
 {
+    // Status List
+    // wait => default create
+    // working => serving in counter
+    // hold => holding
+    // finish => finish get VN
+
     // list of station code and name
     const STATION_LIST = [
         '01'  => 'วัดความดัน',
@@ -36,6 +42,12 @@ class PatientTask extends Model
 
     protected $fillable = [
         'patient',
+        'date',
         'code',
     ];
+
+    public function patient_master()
+    {
+        return $this->belongsTo(PatientMaster::class, 'patient', 'id');
+    }
 }

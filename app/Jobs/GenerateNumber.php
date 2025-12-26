@@ -40,6 +40,6 @@ class GenerateNumber implements ShouldQueue, ShouldBeUniqueUntilProcessing
             $prevn->save();
         }
 
-        GenerateNumber::dispatch()->onQueue('generate-number')->delay(1);
+        GenerateNumber::dispatch()->delay(1);
     }
 }

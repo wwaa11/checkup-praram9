@@ -5,6 +5,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class PatientPreVN extends Model
 {
+    // Status List
+    // wait => default create
+    // walkin => change default to walkin
+    // followup => change default to followup
+    // working => serving in counter
+    // hold => holding
+    // finish => finish get VN
+
     protected $table = 'patient_prevns';
 
     protected $fillable = [

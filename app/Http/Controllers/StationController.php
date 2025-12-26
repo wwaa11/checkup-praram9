@@ -198,7 +198,7 @@ class StationController extends Controller
         $room  = Room::find($roomID);
         $prevn = PatientPreVN::whereDate('date', date('Y-m-d'))
             ->where('number', $room->now)
-            ->get();
+            ->first();
 
         $response = [
             'status'  => 'success',
