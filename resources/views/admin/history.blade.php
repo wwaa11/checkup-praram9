@@ -27,8 +27,8 @@
             </div>
         </div>
         <ul class="list bg-base-100 rounded-box shadow-md" id="history-list">
-            @if ($patient_master?->getLogs->count() > 0)
-                @foreach ($patient_master?->getLogs as $log)
+            @if ($patient_master?->logs->count() > 0)
+                @foreach ($patient_master?->logs as $log)
                     <li class="list-row hover:bg-base-200">
                         <div class="my-auto opacity-50">
                             {{ $log->created_at->format("H:i:s") }}

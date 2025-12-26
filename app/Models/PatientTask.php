@@ -7,6 +7,7 @@ class PatientTask extends Model
 {
     // Status List
     // wait => default create
+    // queue => default create
     // working => serving in counter
     // hold => holding
     // finish => finish get VN
@@ -44,6 +45,7 @@ class PatientTask extends Model
         'patient',
         'date',
         'code',
+        'status',
     ];
 
     public function patient_master()

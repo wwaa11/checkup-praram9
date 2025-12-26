@@ -2,7 +2,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\PatientMaster;
-use App\Models\PatientTask;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -91,7 +90,7 @@ class GenerateController extends Controller
                 foreach ($dataJson['data'] as $key => $value) {
                     $patient = PatientMaster::where('hn', $value['hn'])->whereDate('date', date('Y-m-d'))->first();
                     if ($patient) {
-                        $number = $patient->getPreVN->number ?? 'Generating...';
+                        $number = $patient->prevn->number ?? 'Generating...';
                     }
                     session()->put($value['hn'], $value);
                     $data['patient'][] = [
@@ -106,7 +105,7 @@ class GenerateController extends Controller
             } else {
                 $patient = PatientMaster::where('hn', $input)->first();
                 if ($patient) {
-                    $number = $patient->getPreVN->number ?? 'Generating...';
+                    $number = $patient->prevn->number ?? 'Generating...';
                 }
                 $data['patient'][] = [
                     'isExist'     => $patient ? true : false,
@@ -168,13 +167,13 @@ class GenerateController extends Controller
             ->post('https://172.20.10.200:8001/easyqpatientapt', $postData);
 
         if ($response->successful()) {
-            $preVN = $patient->getPreVN()->firstOrCreate([
+            $preVN = $patient->prevn()->firstOrCreate([
                 'date'    => date('Y-m-d'),
                 'type'    => 'A',
                 'checkin' => date('Y-m-d H:i:s'),
             ]);
         } else {
-            $preVN = $patient->getPreVN()->firstOrCreate([
+            $preVN = $patient->prevn()->firstOrCreate([
                 'date'    => date('Y-m-d'),
                 'type'    => 'M',
                 'status'  => 'walkin',
@@ -252,7 +251,7 @@ class GenerateController extends Controller
             $patient->english = $perferEnglish;
             $patient->save();
 
-            $patient->getLogs()->create([
+            $patient->logs()->create([
                 'patient' => $patient->id,
                 'detail'  => 'Create Patient',
                 'user'    => 'API',
@@ -302,15 +301,15 @@ class GenerateController extends Controller
                     break;
             }
 
-            $exist = $patient->getTasks()->where('code', $station)->first();
+            $exist = $patient->tasks()->where('code', $code)->first();
             if ($exist == null) {
-                PatientTask::firstOrCreate([
-                    'patient' => $patient->id,
-                    'date'    => $validatedData['visitdate'],
-                    'code'    => $code,
+                $patient->tasks()->create([
+                    'date'   => $validatedData['visitdate'],
+                    'code'   => $code,
+                    'status' => ($code == 'vs') ? 'queue' : 'wait',
                 ]);
 
-                $patient->getLogs()->create([
+                $patient->logs()->create([
                     'patient' => $patient->id,
                     'detail'  => 'Add CheckUp list ' . $this->setStationCode($station),
                     'user'    => 'API',

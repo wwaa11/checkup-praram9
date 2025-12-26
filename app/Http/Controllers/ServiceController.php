@@ -58,7 +58,7 @@ class ServiceController extends Controller
         foreach ($current_tasks as $task) {
             if ($request->prevn) {
                 $holdoingList['register'][] = $task->number;
-            } elseif ($task->status == 'wait') {
+            } elseif ($task->status == 'queue') {
                 $waitingList[$task->code][] = $task->patient_master->vn;
             } elseif ($task->status == 'hold') {
                 $waitingList[$task->code][] = $task->patient_master->vn;

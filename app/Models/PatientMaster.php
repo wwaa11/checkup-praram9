@@ -18,17 +18,17 @@ class PatientMaster extends Model
         'phoneno',
     ];
 
-    public function getTasks()
+    public function tasks()
     {
         return $this->hasMany(PatientTask::class, 'patient', 'id');
     }
 
-    public function getPreVN()
+    public function prevn()
     {
         return $this->hasOne(PatientPrevN::class, 'patient', 'id');
     }
 
-    public function getLogs()
+    public function logs()
     {
         return $this->hasMany(PatientLog::class, 'patient', 'id');
     }
