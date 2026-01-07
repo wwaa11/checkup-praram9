@@ -1,7 +1,6 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Events\RegisterChannelEvent;
 use App\Models\PatientLog;
 use App\Models\PatientPreVN;
 use App\Models\PatientTask;
@@ -129,9 +128,8 @@ class StationController extends Controller
 
         $prevn->status = 'working';
         $prevn->call   = date('Y-m-d H:i:s');
+        $prevn->call_time++;
         $prevn->save();
-
-        RegisterChannelEvent::dispatch($room->station->code, $prevn->number, $room->name, $prevn->patient_master->english);
 
         $log          = new PatientLog;
         $log->patient = $prevn->patient_master->id;
@@ -199,6 +197,9 @@ class StationController extends Controller
         $prevn = PatientPreVN::whereDate('date', date('Y-m-d'))
             ->where('number', $room->now)
             ->first();
+
+        $prevn->call_time++;
+        $prevn->save();
 
         $response = [
             'status'  => 'success',

@@ -103,7 +103,7 @@ class GenerateController extends Controller
                     ];
                 }
             } else {
-                $patient = PatientMaster::where('hn', $input)->first();
+                $patient = PatientMaster::whereDate('date', date('Y-m-d'))->where('hn', $input)->first();
                 if ($patient) {
                     $number = $patient->prevn->number ?? 'Generating...';
                 }
@@ -148,7 +148,7 @@ class GenerateController extends Controller
             "isautogenvn" => false,
         ];
 
-        $patient     = PatientMaster::where('hn', $hn)->first();
+        $patient     = PatientMaster::whereDate('date', date('Y-m-d'))->where('hn', $hn)->first();
         $patientData = session()->get($hn);
         if (! $patient) {
             $patient          = new PatientMaster();
@@ -180,6 +180,11 @@ class GenerateController extends Controller
                 'checkin' => date('Y-m-d H:i:s'),
             ]);
         }
+
+        $patient->logs()->create([
+            'detail' => 'รับคิว ' . $preVN->number,
+            'user'   => auth()->user()->userid,
+        ]);
 
         $data = [
             'status'  => 'success',

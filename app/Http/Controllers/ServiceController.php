@@ -22,7 +22,6 @@ class ServiceController extends Controller
 
     public function dispatchGenerateNumber()
     {
-
         GenerateNumber::dispatch();
     }
 
